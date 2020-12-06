@@ -12,9 +12,17 @@ void Camera::compute_view_projection()
     view_projection = projection * view;
 }
 
-void Camera::lookAt(glm::vec3 pos)
+void Camera::position(glm::vec3 pos) {
+    pos_ = pos;
+    distance_ = glm::length(center_ - pos);
+}
+
+void Camera::center(glm::vec3 center)
 {
-    front_ = glm::normalize(pos - pos_);
+    center_ = center;
+    distance_ = glm::length(center - pos_);
+
+    front_ = glm::normalize(center - pos_);
     right_ = glm::normalize(glm::cross(front_, UP_));
     up_ = glm::cross(right_, front_);
 
@@ -45,7 +53,7 @@ void Camera::right(float dt)
 void Camera::rotate(int x, int y, float dt)
 {
     azimuth_ += x * dt * sensitivity_ ;
-    inclination_ += y * dt * sensitivity_;
+    inclination_ += -y * dt * sensitivity_;
 
     if (inclination_ > 180.0f) {
         inclination_ = 179.0f;
@@ -57,10 +65,13 @@ void Camera::rotate(int x, int y, float dt)
     azimuth_ = azimuth_ - 360.0f * floor(azimuth_ / 360.0f);
     inclination_ = inclination_ - 180.0f * floor(inclination_ / 180.0f);
 
-    front_.x = sin(glm::radians(inclination_)) * cos(glm::radians(azimuth_));
-    front_.y = cos(glm::radians(inclination_));
-    front_.z = sin(glm::radians(inclination_)) * sin(glm::radians(azimuth_));
+    pos_.x = sin(glm::radians(inclination_)) * cos(glm::radians(azimuth_)) * distance_;
+    pos_.y = cos(glm::radians(inclination_)) * distance_;
+    pos_.z = sin(glm::radians(inclination_)) * sin(glm::radians(azimuth_)) * distance_;
 
+    front_ = glm::normalize(-pos_);
+
+    pos_ += center_;
     right_ = glm::normalize(glm::cross(front_, UP_));
     up_ = glm::cross(right_, front_);
 }
@@ -73,5 +84,9 @@ void Camera::resize(int width, int height)
     glViewport(0, 0, width, height);
 
     ratio_ = static_cast<float>(width) / static_cast<float>(height);
-    fov_y_ = 2.0f * atan(tan(fov_x_ / 2.0f) * ratio_);
+
+    if (!resized_) {
+        resized_ = true;
+        fov_y_ = 2.0f * atan(tan(fov_x_ / 2.0f) * ratio_);
+    }
 }

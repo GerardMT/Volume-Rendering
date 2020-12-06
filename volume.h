@@ -4,6 +4,7 @@
 #include "mesh.h"
 #include "transform.h"
 #include "paint_gl.h"
+#include "volume_data.h"
 
 #include <QOpenGLShaderProgram>
 
@@ -14,6 +15,8 @@ public:
 
     ~Volume();
 
+    void setVolumeData(VolumeData &volumeData);
+
     void transform(glm::mat4 m) override;
 
     void initialieGL() override;
@@ -23,7 +26,9 @@ public:
     void paintGL(float dt, const Camera &camera) override;
 
 private:
-    Mesh *mesh_;
+    Mesh *bounding_box_mesh_;
+
+    VolumeData *volume_data_ = nullptr;
 
     glm::mat4 model_;
 
@@ -36,7 +41,10 @@ private:
     GLuint fbo_;
 
     GLuint framebuffer_ = 0;
-    GLuint texture_;
+
+    GLuint end_texture_;
+
+    GLuint noise_texture_;
 
     QOpenGLContext *context_;
 };

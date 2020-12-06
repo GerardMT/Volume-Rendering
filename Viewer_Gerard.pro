@@ -5,7 +5,7 @@ TEMPLATE = app
 
 CONFIG += c++17
 
-LIBS += -lGLEW
+LIBS += -lGLEW -lboost_system -lboost_filesystem
 
 SOURCES += \
     main.cc \
@@ -13,7 +13,8 @@ SOURCES += \
     glwidget.cc \
     camera.cc \
     mesh.cc \
-    volume.cc
+    volume.cc \
+    volume_data.cpp
 
 HEADERS  += \
     main_window.h \
@@ -22,7 +23,8 @@ HEADERS  += \
     paint_gl.h \
     transform.h \
     mesh.h \
-    volume.h
+    volume.h \
+    volume_data.h
 
 FORMS    += \
     main_window.ui

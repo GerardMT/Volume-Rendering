@@ -23,12 +23,20 @@ public:
 
     void mouseReleaseEvent(QMouseEvent *event) override;
 
+    void loadVolumeData(const string &filename);
+
+    void pause();
+
+    void play();
+
 private:
     void initializeGL() override;
 
     void resizeGL(int w, int h) override;
 
     void paintGL() override;
+
+    QTimer *timer_;
 
     float target_frame_time_ = 1.0f / 60.0f * 1000.0f;
 

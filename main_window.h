@@ -14,6 +14,11 @@ public:
 
 private:
     Ui::MainWindow ui;
+
+private slots:
+    void on_actionOpen_triggered();
+
+     void on_actionQuit_triggered();
 };
 
 #endif  //  MAIN_WINDOW_H_

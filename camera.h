@@ -12,6 +12,9 @@ public:
     glm::mat4 view_projection;
 
     glm::vec3 pos_;
+    glm::vec3 center_;
+
+    float distance_;
 
     glm::vec3 front_;
     glm::vec3 right_;
@@ -31,9 +34,13 @@ public:
     GLfloat far_ = 100.0f;
 
     float speed_ = 5.0;
-    float sensitivity_ = 10.0;
+    float sensitivity_ = 20.0;
 
-    void lookAt(glm::vec3 pos);
+    bool resized_ = false;
+
+    void position(glm::vec3 pos);
+
+    void center(glm::vec3 center);
 
     void forward(float dt);
 
