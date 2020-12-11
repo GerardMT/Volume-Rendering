@@ -7,6 +7,7 @@
 
 #include <GL/glew.h>
 #include <QOpenGLWidget>
+#include <QPushButton>
 
 class GLWidget : public QOpenGLWidget
 {
@@ -40,7 +41,11 @@ private:
 
     float target_frame_time_ = 1.0f / 60.0f * 1000.0f;
 
+    float time_ = 0.0;
+
     Camera camera_;
+
+    Light light_;
 
     Volume *volume_;
 
@@ -55,6 +60,26 @@ private:
     int rotate_last_y_;
 
     float rotate_sensitivity_ = 0.01f;
+
+    bool render_loop_;
+
+    bool gizmos_;
+
+    QOpenGLShaderProgram program_color_;
+
+    GLuint vao_axis_;
+    GLuint vbo_axis_;
+
+private slots:
+    void stepsFactor(double v);
+
+    void stepsFactorShadow(double v);
+
+    void gizmos(bool v);
+
+    void shadows(bool v);
+
+    void renderLoop(bool v);
 };
 
 #endif  //  GLWIDGET_H_

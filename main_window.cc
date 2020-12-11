@@ -1,4 +1,5 @@
 
+#include "histogram_widget.h"
 #include "main_window.h"
 
 #include <QFileDialog>
@@ -7,6 +8,13 @@
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 {
     ui.setupUi(this);
+
+    HistogramWidget *histogram = new HistogramWidget();
+    histogram->setObjectName("histogram");
+    histogram->setMinimumWidth(200);
+    histogram->setMaximumWidth(200);
+
+    findChild<QHBoxLayout *>("horizontalLayout_options")->addWidget(histogram);
 }
 
 void MainWindow::on_actionOpen_triggered()

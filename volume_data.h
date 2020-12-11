@@ -15,7 +15,7 @@ public:
 
     void readFromDicom(const string &filename);
 
-    vector<double> histogram_;
+    vector<float> histogram_;
 
     int width_;
     int height_;

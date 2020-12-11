@@ -8,6 +8,9 @@ CONFIG += c++17
 LIBS += -lGLEW -lboost_system -lboost_filesystem
 
 SOURCES += \
+    histogram_channel_widget.cpp \
+    histogram_widget.cpp \
+    light.cpp \
     main.cc \
     main_window.cc \
     glwidget.cc \
@@ -17,6 +20,10 @@ SOURCES += \
     volume_data.cpp
 
 HEADERS  += \
+    histogram_channel_widget.h \
+    histogram_widget.h \
+    histogram_widget_callback.h \
+    light.h \
     main_window.h \
     glwidget.h \
     camera.h \
@@ -30,6 +37,14 @@ FORMS    += \
     main_window.ui
 
 DISTFILES += \
+    shader/color.frag \
+    shader/color.vert \
+    shader/histogram.frag \
+    shader/histogram.vert \
+    shader/histogram_line.frag \
+    shader/histogram_line.vert \
+    shader/histogram_point.frag \
+    shader/histogram_point.vert \
     shader/position.vert \
     shader/position.frag \
     shader/volume.vert \

@@ -1,67 +1,173 @@
 #version 330
 
+const float FLOAT_MAX = 3.402823466e+38;
+
 out vec4 frag_color;
 
 noperspective in vec2 pos_tex;
+uniform sampler2D end_texture;
 
 smooth in vec3 start_world; // Start
 
-uniform sampler2D end_texture;
+uniform sampler2D noise_texture;
+const float noise_step_size_factor = 1.0;
+
+uniform sampler1D lut_texture;
 
 uniform sampler3D volume_texture;
-
-uniform sampler2D noise_texture;
-
 uniform float step_size;
+uniform float texture_max_size;
 
 uniform vec2 pixel_size;
 
-uniform float max_density;
+uniform float steps_factor;
+uniform float steps_factor_shadow;
+uniform bool shadows;
 
-const float threshold = 0.1;
-const float density = 0.05;
-const float steps = 2.0;
+uniform vec3 light_pos;
+const vec3 light_inten = vec3(0.5);
 
-void main (void) {
-    vec3 end_world = texture(end_texture, pos_tex).rgb;
+const float k_a = 0.05;
+const float k_d = 1.0;
+const float k_s = 1.0;
+const float shininess = 128.0;
 
-    float offset = texture(noise_texture, pos_tex / (pixel_size * textureSize(noise_texture, 0))).r * (step_size * 0.1);
-    end_world += normalize(start_world - end_world) * offset;
 
-    vec3 end_start_world = start_world - end_world;
+const vec3 cube_point[6] = vec3[]( // Hardcoded
+    vec3( 1.0,  0.0,  0.0),
+    vec3(-1.0,  0.0,  0.0),
+    vec3( 0.0,  1.0,  0.0),
+    vec3( 0.0, -1.0,  0.0),
+    vec3( 0.0,  0.0,  1.0),
+    vec3( 0.0,  0.0, -1.0)
+);
 
-    int n_steps = int(ceil(length(end_start_world) / step_size * steps));
-    n_steps = max(n_steps, 0); // DEBUG
+const vec3 cube_norm[6] = vec3[]( // Hardcoded
+    vec3( 1.0,  0.0,  0.0),
+    vec3(-1.0,  0.0,  0.0),
+    vec3( 0.0,  1.0,  0.0),
+    vec3( 0.0, -1.0,  0.0),
+    vec3( 0.0,  0.0,  1.0),
+    vec3( 0.0,  0.0, -1.0)
+);
 
-    vec3 step_world = end_start_world / n_steps;
+float correct(float v)
+{
+    return texture(lut_texture, v).a;
+}
 
-    frag_color = vec4(0.0, 0.0, 0.0, 1.0);
+float volume(vec3 pos)
+{
+    return texture(volume_texture, -pos * 0.5 + 0.5).r;
+}
 
-    vec3 pos_world = end_world;
-    int i = 0;
-    while (i < n_steps && frag_color.a > 0.0) {
-        float alpha = texture(volume_texture, -pos_world * 0.5 + 0.5).r / max_density;
-        if (alpha < threshold) {
-           alpha = 0.0;
+vec3 color(float density)
+{
+    return texture(lut_texture, density).rgb;
+}
+
+float plane_point_intersection(vec3 pos, vec3 l, int face)
+{
+    float den = dot(l, cube_norm[face]);
+    if (den > 0.0) {
+        return dot((cube_point[face] - pos), cube_norm[face]) / den;
+    } else {
+        return FLOAT_MAX;
+    }
+}
+
+float shadow(vec3 pos, vec3 l)
+{
+    float d0 = plane_point_intersection(pos, l, 0);
+    float d1 = plane_point_intersection(pos, l, 1);
+    float d2 = plane_point_intersection(pos, l, 2);
+    float d3 = plane_point_intersection(pos, l, 3);
+    float d4 = plane_point_intersection(pos, l, 4);
+    float d5 = plane_point_intersection(pos, l, 5);
+
+    float d = min(min(min(min(min(d0, d1), d2), d3), d4), d5);
+    vec3 end = pos + d * l;
+
+    float offset = texture(noise_texture, pos_tex / (pixel_size * textureSize(noise_texture, 0))).r * (step_size * noise_step_size_factor);
+    pos = start_world + normalize(end - pos) * offset;
+
+    vec3 start_end = end - pos;
+
+    int n_steps = int(ceil(length(start_end) / step_size * steps_factor_shadow));
+    n_steps = min(max(n_steps, 0), 1000); // DEBUG
+
+    vec3 step = start_end / n_steps;
+
+    float alpha = 0.0;
+    int i;
+    for (i = 0; i < n_steps; ++i) {
+        alpha = alpha + pow((1.0 - alpha), float(n_steps) / texture_max_size) * correct(volume(pos));
+
+        if (alpha >= 1.0) {
+            alpha = 1.0; // F Compiler bug
+            break;
         }
-        alpha *= density;
 
-        vec3 color = vec3(0.0);
-        frag_color.rgb = color + (1.0 - alpha) * frag_color.rgb;
-        frag_color.a *= (1.0 - alpha);
-
-        ++i;
-        pos_world += step_world;
+        pos += step;
     }
 
-    frag_color.a = 1.0 - frag_color.a;
+    return alpha;
+}
 
-    if (frag_color.a >= 1.0) {
-        //frag_color = vec4(1.0, 0.0, 0.0, 1.0);
-    } else if (frag_color.a == 0.0) {
-        //frag_color = vec4(0.0, 1.0, 0.0, 1.0);
+vec3 lighting(vec3 pos, vec3 v, float density)
+{
+    vec3 n = normalize(vec3(volume(pos + vec3(step_size, 0.0, 0.0)) - volume(pos - vec3(step_size, 0.0, 0.0)),
+                            volume(pos + vec3(0.0, step_size, 0.0)) - volume(pos - vec3(0.0, step_size, 0.0)),
+                            volume(pos + vec3(0.0, 0.0, step_size)) - volume(pos - vec3(0.0, 0.0, step_size))));
+    vec3 l = normalize(light_pos - pos);
+    vec3 h = normalize(l + v);
+
+    vec3 c = color(density);
+
+    vec3 ambi = k_a * c;
+    vec3 diff = k_d * max(0.0, dot(l, n)) * light_inten * c;
+    vec3 spec = k_s * pow(max(0.0, dot(n, h)), shininess) * light_inten;
+
+    float s = 0.0;
+    if (shadows) {
+        s = shadow(pos, l);
     }
+    return ambi + ((diff + spec) * (1.0 - s));
+}
 
-    //float c = end_world;
-    //frag_color = vec4(end_world, 1.0);
+void main (void)
+{
+    vec3 end = texture(end_texture, pos_tex).rgb;
+
+    float offset = texture(noise_texture, pos_tex / (pixel_size * textureSize(noise_texture, 0))).r * (step_size * noise_step_size_factor);
+    vec3 start = start_world + normalize(end - start_world) * offset;
+
+    vec3 start_end = end - start;
+
+    int n_steps = int(ceil(length(start_end) / step_size * steps_factor));
+    n_steps = min(max(n_steps, 0), 1000); // DEBUG
+
+    vec3 step = start_end / n_steps;
+
+    frag_color = vec4(0.0, 0.0, 0.0, 0.0);
+
+    // Phong
+    vec3 v = normalize(-start_end);
+    // ----
+
+    vec3 pos = start;
+    for (int i = 0; i < n_steps; ++i) {
+        float density = volume(pos);
+
+        float alpha = pow((1.0 - frag_color.a), float(n_steps) / texture_max_size);
+        frag_color.rgb = frag_color.rgb + alpha * lighting(pos, v, density);
+        frag_color.a = frag_color.a + alpha * correct(density);
+
+        if (frag_color.a >= 1.0) {
+            frag_color.a = 1.0; // F Compiler bug
+            break;
+        }
+
+        pos += step;
+    }
 }

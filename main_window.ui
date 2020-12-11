@@ -2,18 +2,27 @@
 <ui version="4.0">
  <class>MainWindow</class>
  <widget class="QMainWindow" name="MainWindow">
+  <property name="enabled">
+   <bool>true</bool>
+  </property>
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>827</width>
-    <height>618</height>
+    <width>1028</width>
+    <height>641</height>
    </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
   </property>
   <property name="minimumSize">
    <size>
-    <width>827</width>
-    <height>618</height>
+    <width>0</width>
+    <height>0</height>
    </size>
   </property>
   <property name="baseSize">
@@ -25,7 +34,7 @@
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
-  <widget class="QWidget" name="widget">
+  <widget class="QWidget" name="Parent">
    <property name="minimumSize">
     <size>
      <width>827</width>
@@ -39,6 +48,9 @@
     </size>
    </property>
    <layout class="QHBoxLayout" name="horizontalLayout">
+    <property name="sizeConstraint">
+     <enum>QLayout::SetMinimumSize</enum>
+    </property>
     <item>
      <widget class="GLWidget" name="glwidget" native="true">
       <property name="minimumSize">
@@ -63,24 +75,205 @@
     </item>
     <item>
      <layout class="QVBoxLayout" name="Configuration">
+      <property name="sizeConstraint">
+       <enum>QLayout::SetDefaultConstraint</enum>
+      </property>
       <item>
-       <widget class="QGroupBox" name="TreeOptions">
-        <property name="minimumSize">
-         <size>
-          <width>200</width>
-          <height>0</height>
-         </size>
+       <widget class="QLabel" name="label">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
         </property>
         <property name="maximumSize">
          <size>
-          <width>200</width>
+          <width>16777215</width>
           <height>16777215</height>
          </size>
         </property>
-        <property name="title">
+        <property name="font">
+         <font>
+          <weight>75</weight>
+          <bold>true</bold>
+         </font>
+        </property>
+        <property name="text">
          <string>Options</string>
         </property>
+        <property name="alignment">
+         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+        </property>
        </widget>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_options">
+        <item>
+         <widget class="QGroupBox" name="TreeOptions">
+          <property name="minimumSize">
+           <size>
+            <width>200</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>200</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="title">
+           <string/>
+          </property>
+          <widget class="QDoubleSpinBox" name="doubleSpinBoxStepsFactor">
+           <property name="geometry">
+            <rect>
+             <x>10</x>
+             <y>20</y>
+             <width>181</width>
+             <height>42</height>
+            </rect>
+           </property>
+           <property name="decimals">
+            <number>3</number>
+           </property>
+           <property name="maximum">
+            <double>10.000000000000000</double>
+           </property>
+           <property name="singleStep">
+            <double>0.100000000000000</double>
+           </property>
+           <property name="value">
+            <double>1.000000000000000</double>
+           </property>
+          </widget>
+          <widget class="QLabel" name="label_8">
+           <property name="geometry">
+            <rect>
+             <x>10</x>
+             <y>0</y>
+             <width>91</width>
+             <height>19</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>Steps Factor</string>
+           </property>
+          </widget>
+          <widget class="QLabel" name="label_9">
+           <property name="geometry">
+            <rect>
+             <x>10</x>
+             <y>70</y>
+             <width>151</width>
+             <height>19</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>Steps Factor Shadow</string>
+           </property>
+          </widget>
+          <widget class="QDoubleSpinBox" name="doubleSpinBoxStepsFactorShadow">
+           <property name="geometry">
+            <rect>
+             <x>10</x>
+             <y>90</y>
+             <width>181</width>
+             <height>42</height>
+            </rect>
+           </property>
+           <property name="decimals">
+            <number>3</number>
+           </property>
+           <property name="maximum">
+            <double>10.000000000000000</double>
+           </property>
+           <property name="singleStep">
+            <double>0.100000000000000</double>
+           </property>
+           <property name="value">
+            <double>0.100000000000000</double>
+           </property>
+          </widget>
+          <widget class="QCheckBox" name="checkBoxGizmos">
+           <property name="geometry">
+            <rect>
+             <x>10</x>
+             <y>170</y>
+             <width>105</width>
+             <height>25</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>Gizmos</string>
+           </property>
+           <property name="checked">
+            <bool>false</bool>
+           </property>
+           <property name="tristate">
+            <bool>false</bool>
+           </property>
+          </widget>
+          <widget class="QCheckBox" name="checkBoxShadows">
+           <property name="geometry">
+            <rect>
+             <x>10</x>
+             <y>140</y>
+             <width>105</width>
+             <height>25</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>Shadows</string>
+           </property>
+           <property name="checked">
+            <bool>false</bool>
+           </property>
+           <property name="tristate">
+            <bool>false</bool>
+           </property>
+          </widget>
+          <widget class="QCheckBox" name="checkBoxRenderLoop">
+           <property name="geometry">
+            <rect>
+             <x>10</x>
+             <y>240</y>
+             <width>121</width>
+             <height>25</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>Loop</string>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
+           </property>
+           <property name="tristate">
+            <bool>false</bool>
+           </property>
+          </widget>
+          <widget class="QLabel" name="label_10">
+           <property name="geometry">
+            <rect>
+             <x>10</x>
+             <y>210</y>
+             <width>151</width>
+             <height>19</height>
+            </rect>
+           </property>
+           <property name="font">
+            <font>
+             <weight>75</weight>
+             <bold>true</bold>
+            </font>
+           </property>
+           <property name="text">
+            <string>Render</string>
+           </property>
+          </widget>
+         </widget>
+        </item>
+       </layout>
       </item>
      </layout>
     </item>
@@ -91,7 +284,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>827</width>
+     <width>1028</width>
      <height>29</height>
     </rect>
    </property>
@@ -126,11 +319,100 @@
     <signal>SetFaces(QString)</signal>
     <signal>SetVertices(QString)</signal>
     <signal>SetFramerate(QString)</signal>
+    <slot>densityFactor(double)</slot>
+    <slot>densityThreshold(double)</slot>
+    <slot>stepsFactor(double)</slot>
+    <slot>stepsFactorShadow(double)</slot>
+    <slot>gizmos(bool)</slot>
+    <slot>shadows(bool)</slot>
+    <slot>render()</slot>
+    <slot>renderLoop(bool)</slot>
    </slots>
   </customwidget>
  </customwidgets>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>doubleSpinBoxStepsFactor</sender>
+   <signal>valueChanged(double)</signal>
+   <receiver>glwidget</receiver>
+   <slot>stepsFactor(double)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>667</x>
+     <y>254</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>548</x>
+     <y>301</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>doubleSpinBoxStepsFactorShadow</sender>
+   <signal>valueChanged(double)</signal>
+   <receiver>glwidget</receiver>
+   <slot>stepsFactorShadow(double)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>695</x>
+     <y>327</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>528</x>
+     <y>380</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>checkBoxShadows</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>glwidget</receiver>
+   <slot>shadows(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>696</x>
+     <y>355</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>583</x>
+     <y>453</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>checkBoxGizmos</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>glwidget</receiver>
+   <slot>gizmos(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>649</x>
+     <y>389</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>569</x>
+     <y>404</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>checkBoxRenderLoop</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>glwidget</receiver>
+   <slot>renderLoop(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>671</x>
+     <y>452</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>544</x>
+     <y>501</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
  <slots>
   <signal>updated_plane(double,double,double,double,bool)</signal>
   <slot>toggle_transfer_function_dialog()</slot>

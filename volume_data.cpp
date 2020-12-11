@@ -71,19 +71,21 @@ void VolumeData::readFromDicom(const std::string& path)
 
     glGenTextures(1, &texture_);
     glBindTexture(GL_TEXTURE_3D, texture_);
-    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP);
     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP);
     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP);
+
     glTexImage3D(GL_TEXTURE_3D, 0, GL_RED, width_, height_, depth_, 0, GL_RED, GL_UNSIGNED_BYTE, &data[0]);
+
     glGenerateMipmap(GL_TEXTURE_3D);
 
-    std::vector<double> sorted_histogram_;
+    std::vector<float> sorted_histogram_;
     sorted_histogram_.insert(sorted_histogram_.begin(), histogram_.begin(), histogram_.end());
     sort(sorted_histogram_.begin(), sorted_histogram_.end());
 
-    const double kMaximum = sorted_histogram_[sorted_histogram_.size() * 0.98f];
+    const float kMaximum = sorted_histogram_[sorted_histogram_.size() * 0.98];
 
     const int kHistSize = histogram_.size();
     for (int i = 0; i < kHistSize; ++i) {
