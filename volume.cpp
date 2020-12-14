@@ -3,7 +3,6 @@
 
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include <QOpenGLContext>
 #include <iostream>
 #include <QImage>
 
@@ -18,8 +17,6 @@ Volume::Volume(glm::vec3 pos)
 
     model_ = glm::mat4(1.0f);
     model_ = glm::translate(model_, pos);
-
-    context_ = QOpenGLContext::currentContext();
 }
 
 Volume::~Volume()
@@ -35,9 +32,6 @@ Volume::~Volume()
 
     glDeleteTextures(1, &end_texture_);
     glDeleteTextures(1, &noise_texture_);
-
-    glDeleteVertexArrays(1, &vao_line_);
-    glDeleteBuffers(1, &vbo_line_);
 }
 
 VolumeData *Volume::volumeData()
@@ -70,6 +64,7 @@ void Volume::transform(glm::mat4 m)
 
 void Volume::initialieGL()
 {
+    // 1st pass
     bool res;
     res = program_position_.addShaderFromSourceFile(QOpenGLShader::Vertex, "../shader/position.vert");
     if (!res){
@@ -82,6 +77,7 @@ void Volume::initialieGL()
     }
     program_position_.link();
 
+    // 2n pass
     res = program_volume_.addShaderFromSourceFile(QOpenGLShader::Vertex, "../shader/volume.vert");
     if (!res){
         cout << program_volume_.log().toUtf8().constData() << endl;
@@ -93,7 +89,7 @@ void Volume::initialieGL()
     }
     program_volume_.link();
 
-    // Bounding box
+    // Bounding mesh
     glGenVertexArrays(1, &vao_);
     glBindVertexArray(vao_);
 
@@ -119,11 +115,15 @@ void Volume::initialieGL()
     // Framebuffer
     glGenFramebuffers(1, &framebuffer_);
 
+    // Volume
+    program_volume_.bind();
+    glUniform1i(program_volume_.uniformLocation("end_texture"), 0);
+
     // Noise texture
     glGenTextures(1, &noise_texture_);
     glBindTexture(GL_TEXTURE_2D, noise_texture_);
-    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     QImage image;
@@ -132,12 +132,9 @@ void Volume::initialieGL()
     }
     glTexImage2D(GL_TEXTURE_2D, 0, GL_R16, image.width(), image.height(), 0, GL_RED, GL_UNSIGNED_SHORT, image.bits());
 
-    // Volume
-    program_volume_.bind();
     glUniform1i(program_volume_.uniformLocation("noise_texture"), 2);
 
-    glUniform1i(program_volume_.uniformLocation("end_texture"), 0);
-
+    // Gizmos
     res = program_color_.addShaderFromSourceFile(QOpenGLShader::Vertex, "../shader/color.vert");
     if (!res){
         cout << program_color_.log().toUtf8().constData() << endl;
@@ -149,16 +146,8 @@ void Volume::initialieGL()
     program_color_.link();
 
     // Line
-    glGenVertexArrays(1, &vao_line_);
-    glBindVertexArray(vao_line_);
-
-    glGenBuffers(1, &vbo_line_);
-    glBindBuffer(GL_ARRAY_BUFFER, vbo_line_);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
-    glEnableVertexAttribArray(0);
-
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
+    light_line_.initialieGL();
+    light_line_.color(glm::vec4(0.0, 1.0, 0.0, 1.0));
 
     // Lut
     glGenTextures(1, &lut_texture_);
@@ -168,9 +157,9 @@ void Volume::initialieGL()
     glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-    program_volume_.bind();
     glUniform1i(program_volume_.uniformLocation("lut_texture"), 3);
 
+    // Histogram
     if (histogram_data_ != nullptr) {
         initializeHistogramData();
     }
@@ -180,6 +169,8 @@ void Volume::initialieGL()
 
 void Volume::resize(Camera &camera_)
 {
+    // 1st pass texture attached to a framebuffer
+    // Delete previous texture
     glDeleteTextures(1, &end_texture_);
 
     glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_);
@@ -191,13 +182,14 @@ void Volume::resize(Camera &camera_)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, end_texture_, 0);
 
-    glBindFramebuffer(GL_FRAMEBUFFER, context_->defaultFramebufferObject());
+    glBindFramebuffer(GL_FRAMEBUFFER, opengl_widget_->defaultFramebufferObject());
 
+    // Pixel size with respect to texture coordinate system
     program_volume_.bind();
     glUniform2f(program_volume_.uniformLocation("pixel_size"), 1.0f / camera_.width_, 1.0f / camera_.height_);
 }
 
-void Volume::paintGL(__attribute__((unused)) float dt, const Camera &camera)
+void Volume::paintGL(__attribute__((unused)) float dt, Camera &camera)
 {
     if (!histogram_widget_->initialized()) {
         return;
@@ -223,13 +215,12 @@ void Volume::paintGL(__attribute__((unused)) float dt, const Camera &camera)
 
     glCullFace(GL_BACK);
 
-    glBindFramebuffer(GL_FRAMEBUFFER, context_->defaultFramebufferObject());
+    glBindFramebuffer(GL_FRAMEBUFFER, opengl_widget_->defaultFramebufferObject());
 
     program_volume_.bind();
     glUniformMatrix4fv(program_volume_.uniformLocation("model"), 1, GL_FALSE, glm::value_ptr(model_));
     glUniformMatrix4fv(program_volume_.uniformLocation("view_projection"), 1, GL_FALSE, glm::value_ptr(camera.view_projection));
     glUniform3fv(program_volume_.uniformLocation("light_pos"), 1, glm::value_ptr(light_->pos_));
-    glUniform1i(program_volume_.uniformLocation("shadows"), shadows_);
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, end_texture_);
@@ -250,33 +241,21 @@ void Volume::paintGL(__attribute__((unused)) float dt, const Camera &camera)
 
     if (gizmos_) {
         // Light line
-        glm::vec3 line[2];
-        line[0] = light_->pos_;
-        line[1] = pos_;
+        glm::vec3 data[2];
+        data[0] = light_->pos_;
+        data[1] = pos_;
 
-        glBindBuffer(GL_ARRAY_BUFFER, vbo_line_);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(line), line, GL_STATIC_DRAW);
-
-        program_color_.bind();
-        glm::mat4 identity = glm::mat4(1.0);
-        glm::vec4 color = glm::vec4(0.0, 1.0, 0.0, 1.0);
-        glUniformMatrix4fv(program_color_.uniformLocation("model"), 1, GL_FALSE, glm::value_ptr(identity));
-        glUniformMatrix4fv(program_color_.uniformLocation("view_projection"), 1, GL_FALSE, glm::value_ptr(camera.view_projection));
-        glUniform4fv(program_color_.uniformLocation("color"), 1, glm::value_ptr(color));
-
-        glBindVertexArray(vao_line_);
-        glDrawArrays(GL_LINES, 0, 2);
-        glBindVertexArray(0);
+        light_line_.data(data);
+        light_line_.paintGL(dt, camera);
 
         // Bounding box
         program_color_.bind();
-        color = glm::vec4(1.0, 0.0, 0.0, 1.0);
+        glm::vec4 color = glm::vec4(1.0, 0.0, 0.0, 1.0);
         glUniformMatrix4fv(program_color_.uniformLocation("model"), 1, GL_FALSE, glm::value_ptr(model_));
         glUniformMatrix4fv(program_color_.uniformLocation("view_projection"), 1, GL_FALSE, glm::value_ptr(camera.view_projection));
         glUniform4fv(program_color_.uniformLocation("color"), 1, glm::value_ptr(color));
 
         glDisable(GL_CULL_FACE);
-
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
         glBindVertexArray(vao_);
@@ -311,7 +290,52 @@ void Volume::histogramUpdated(vector<glm::vec4> &data)
 void Volume::histogram(HistogramWidget &histogramWidget)
 {
     histogram_widget_ = &histogramWidget;
-    histogramWidget.histogram_widget_callback_ = this;
+}
+
+void Volume::ambient(float v)
+{
+    program_volume_.bind();
+    glUniform1f(program_volume_.uniformLocation("k_a"), v);
+}
+
+void Volume::diffuse(float v)
+{
+    program_volume_.bind();
+    glUniform1f(program_volume_.uniformLocation("k_d"), v);
+}
+
+void Volume::specular(float v)
+{
+    program_volume_.bind();
+    glUniform1f(program_volume_.uniformLocation("k_s"), v);
+}
+
+void Volume::shininess(float v)
+{
+    program_volume_.bind();
+    glUniform1f(program_volume_.uniformLocation("shininess"), v);
+}
+
+void Volume::noiseFactor(float v)
+{
+    program_volume_.bind();
+    glUniform1f(program_volume_.uniformLocation("noise_step_size_factor"), v);
+}
+
+void Volume::shadows(bool v)
+{
+    program_volume_.bind();
+    glUniform1i(program_volume_.uniformLocation("shadows"), v);
+}
+
+void Volume::gizmos(bool v)
+{
+    gizmos_ = v;
+}
+
+void Volume::OpenGLWidget(QOpenGLWidget &opengl_widget)
+{
+    opengl_widget_ = &opengl_widget;
 }
 
 void Volume::initializeHistogramData()

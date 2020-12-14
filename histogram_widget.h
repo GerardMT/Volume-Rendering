@@ -18,6 +18,8 @@ public:
 
     void volumeData(VolumeData &volumeData);
 
+    void volumeDataUpdated();
+
     void dataUpdated();
 
     HistogramWidgetCallback *histogram_widget_callback_;

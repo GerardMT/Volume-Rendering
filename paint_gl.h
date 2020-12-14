@@ -12,7 +12,7 @@ public:
 
     virtual void resize(Camera &camera) = 0;
 
-    virtual void paintGL(float dt, const Camera &camera) = 0;
+    virtual void paintGL(float dt, Camera &camera) = 0;
 };
 
 #endif // PAINTGL_H

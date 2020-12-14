@@ -17,6 +17,8 @@ class HistogramWidget;
 class HistogramChannelWidget : public QOpenGLWidget
 {
 public:
+    friend HistogramWidget;
+
     explicit HistogramChannelWidget(int channel, QWidget *parent = nullptr);
 
     ~HistogramChannelWidget();
@@ -24,8 +26,6 @@ public:
     void volumeData(VolumeData &volumeData);
 
     void histogramWidget(HistogramWidget &histogramWidget);
-
-    vector<float> data_;
 
 private:
     void mouseMoveEvent(QMouseEvent *event) override;
@@ -44,9 +44,11 @@ private:
 
     void pointsModified();
 
-    void initializeVolumeData();
+    void volumeDataUpdated();
 
     int channel_;
+
+    vector<float> data_;
 
     // Histogram
     QOpenGLShaderProgram program_histogram_;

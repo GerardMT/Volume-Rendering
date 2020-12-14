@@ -14,7 +14,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     histogram->setMinimumWidth(200);
     histogram->setMaximumWidth(200);
 
-    findChild<QHBoxLayout *>("horizontalLayout_options")->addWidget(histogram);
+    findChild<QVBoxLayout *>("histogramContainer")->addWidget(histogram);
 }
 
 void MainWindow::on_actionOpen_triggered()

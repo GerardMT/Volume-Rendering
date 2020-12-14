@@ -71,6 +71,20 @@ void HistogramChannelWidget::mousePressEvent(QMouseEvent *event) {
             }
         }
 
+        if (move_point_ == -1) {
+            points_.push_back(click);
+            sortPoints();
+            pointsModified();
+
+            // Find point again once sorted
+            for (unsigned int i = 0; i < points_.size(); ++i) {
+                if (abs(points_[i].x - click.x) <= point_distance_) {
+                    move_point_ = i;
+                    break;
+                }
+            }
+        }
+
         break;
     }
     }
@@ -92,24 +106,6 @@ void HistogramChannelWidget::mouseReleaseEvent(QMouseEvent *event)
     }
 
     switch (event->button()) {
-    case Qt::LeftButton:
-    {
-        bool found = false;
-        for (unsigned int i = 0; i < points_.size(); ++i) {
-            if (abs(points_[i].x - click.x) <= point_distance_) {
-                found = true;
-                break;
-            }
-        }
-
-        if (!found) {
-            points_.push_back(click);
-            sortPoints();
-            pointsModified();
-        }
-
-        break;
-    }
     case Qt::RightButton:
     {
         for (unsigned int i = 0; i < points_.size(); ++i) {
@@ -167,7 +163,7 @@ void HistogramChannelWidget::initializeGL()
     glBindVertexArray(0);
 
     if (volume_data_ != nullptr) {
-        initializeVolumeData();
+        volumeDataUpdated();
     }
 
     // Points
@@ -303,7 +299,7 @@ void HistogramChannelWidget::pointsModified()
     update();
 }
 
-void HistogramChannelWidget::initializeVolumeData()
+void HistogramChannelWidget::volumeDataUpdated()
 {
     program_histogram_.bind();
     glUniform1fv(program_histogram_.uniformLocation("histogram"), volume_data_->histogram_.size(), &volume_data_->histogram_[0]);
@@ -314,7 +310,7 @@ void HistogramChannelWidget::volumeData(VolumeData &volumeData)
     volume_data_ = &volumeData;
 
     if (initialized_) {
-        initializeVolumeData();
+        volumeDataUpdated();
     }
 }
 

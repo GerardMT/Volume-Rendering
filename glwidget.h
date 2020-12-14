@@ -3,13 +3,14 @@
 #define GLWIDGET_H_
 
 #include "camera.h"
+#include "line.h"
 #include "volume.h"
 
 #include <GL/glew.h>
 #include <QOpenGLWidget>
 #include <QPushButton>
 
-class GLWidget : public QOpenGLWidget
+class GLWidget : public QOpenGLWidget, public HistogramWidgetCallback
 {
     Q_OBJECT
 
@@ -17,6 +18,8 @@ public:
     explicit GLWidget(QWidget *parent = nullptr);
 
     ~GLWidget();
+
+    void histogramUpdated(vector<glm::vec4> &data) override;
 
     void mousePressEvent(QMouseEvent *event) override;
 
@@ -37,6 +40,8 @@ private:
 
     void paintGL() override;
 
+    void paintGLImmersive();
+
     QTimer *timer_;
 
     float target_frame_time_ = 1.0f / 60.0f * 1000.0f;
@@ -47,7 +52,10 @@ private:
 
     Light light_;
 
+    VolumeData *volume_data_;
     Volume *volume_;
+
+    HistogramWidget *histogram_widget_;
 
     chrono::steady_clock::time_point  time_last_;
 
@@ -62,13 +70,15 @@ private:
     float rotate_sensitivity_ = 0.01f;
 
     bool render_loop_;
+    bool render_tiled_;
 
     bool gizmos_;
 
-    QOpenGLShaderProgram program_color_;
+    float light_x_ = 0.0f;
 
-    GLuint vao_axis_;
-    GLuint vbo_axis_;
+    bool rotate_light_;
+
+    vector<Line> lines_;
 
 private slots:
     void stepsFactor(double v);
@@ -77,9 +87,23 @@ private slots:
 
     void gizmos(bool v);
 
+    void ambient(double v);
+
+    void diffuse(double v);
+
+    void specular(double v);
+
+    void shininess(double v);
+
     void shadows(bool v);
 
+    void rotateLight(bool v);
+
     void renderLoop(bool v);
+
+    void renderTiled(bool v);
+
+    void noiseFactor(double v);
 };
 
 #endif  //  GLWIDGET_H_
