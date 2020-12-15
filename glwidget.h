@@ -52,7 +52,6 @@ private:
 
     Light light_;
 
-    VolumeData *volume_data_;
     Volume *volume_;
 
     HistogramWidget *histogram_widget_;

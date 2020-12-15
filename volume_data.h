@@ -15,6 +15,8 @@ public:
 
     void readFromDicom(const string &filename);
 
+    bool initialized();
+
     vector<float> histogram_;
 
     int width_;
@@ -22,6 +24,9 @@ public:
     int depth_;
 
     GLuint texture_ = 0;
+
+private:
+    bool initialized_ = false;
 };
 
 #endif // VOLUMEDATA_H

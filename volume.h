@@ -19,8 +19,6 @@ public:
 
     ~Volume();
 
-    VolumeData *volumeData();
-
     void volumeData(VolumeData &volumeData);
 
     void light(Light &light);

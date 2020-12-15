@@ -39,13 +39,6 @@ void HistogramWidget::volumeData(VolumeData &volumeData)
     }
 }
 
-void HistogramWidget::volumeDataUpdated()
-{
-    for (int i = 0; i < NUM_CHANNELS; ++i) {
-        channel_[i]->volumeDataUpdated();
-    }
-}
-
 void HistogramWidget::dataUpdated()
 {
     if (!initialized_) {

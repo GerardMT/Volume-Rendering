@@ -34,16 +34,13 @@ Volume::~Volume()
     glDeleteTextures(1, &noise_texture_);
 }
 
-VolumeData *Volume::volumeData()
-{
-    return volume_data_;
-}
-
 void Volume::volumeData(VolumeData &volumeData)
 {
     delete volume_data_;
 
     volume_data_ = &volumeData;
+
+    program_volume_.bind();
     glUniform1i(program_volume_.uniformLocation("volume_texture"), 1);
 
     float max_dim = max(max(volumeData.width_, volumeData.height_), volumeData.depth_);
@@ -191,6 +188,9 @@ void Volume::resize(Camera &camera_)
 
 void Volume::paintGL(__attribute__((unused)) float dt, Camera &camera)
 {
+    if (volume_data_ == nullptr) {
+        return;
+    }
     if (!histogram_widget_->initialized()) {
         return;
     }

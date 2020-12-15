@@ -30,6 +30,8 @@ void VolumeData::readFromDicom(const std::string& path)
     histogram_.clear();
     histogram_.resize(256, 0);
 
+    glDeleteTextures(1, &texture_);
+
     std::vector<boost::filesystem::path> paths(boost::filesystem::directory_iterator{kDir}, boost::filesystem::directory_iterator{});
     std::sort(paths.begin(), paths.end(), compare);
 
@@ -79,8 +81,6 @@ void VolumeData::readFromDicom(const std::string& path)
 
     glTexImage3D(GL_TEXTURE_3D, 0, GL_RED, width_, height_, depth_, 0, GL_RED, GL_UNSIGNED_BYTE, &data[0]);
 
-    glGenerateMipmap(GL_TEXTURE_3D);
-
     std::vector<float> sorted_histogram_;
     sorted_histogram_.insert(sorted_histogram_.begin(), histogram_.begin(), histogram_.end());
     sort(sorted_histogram_.begin(), sorted_histogram_.end());
@@ -93,5 +93,12 @@ void VolumeData::readFromDicom(const std::string& path)
     }
 
     cout << "Volume loaded, 3D texture built: " << width_ << " x " << height_ << " x " << depth_ << std::endl;
+
+    initialized_ = true;
+}
+
+bool VolumeData::initialized()
+{
+    return initialized_;
 }
 

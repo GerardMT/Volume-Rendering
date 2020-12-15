@@ -88,8 +88,15 @@ void GLWidget::mouseReleaseEvent(QMouseEvent *event) {
 
 void GLWidget::loadVolumeData(const string &filename)
 {
-    volume_data_->readFromDicom(filename);
-    histogram_widget_->volumeDataUpdated();
+    VolumeData *volume_data = new VolumeData();
+    volume_data->readFromDicom(filename);
+
+    histogram_widget_->volumeData(*volume_data);
+    volume_->volumeData(*volume_data);
+
+    if (!render_loop_ ) {
+        update();
+    }
 }
 
 void GLWidget::pause()
@@ -120,17 +127,10 @@ void GLWidget::initializeGL()
     histogram_widget_ = topLevelWidget()->findChild<HistogramWidget *>("histogram");
     histogram_widget_->histogram_widget_callback_ = this;
 
-    // Volume data
-    volume_data_ = new VolumeData();
-    volume_data_->readFromDicom("../../Models/Test 1/");
-    // Attach histogram and volume data
-    histogram_widget_->volumeData(*volume_data_);
-
     // Volume
     volume_= new Volume(glm::vec3(0.0f, 0.0f, 0.0f));
     volume_->OpenGLWidget(*this);
     volume_->initialieGL();
-    volume_->volumeData(*volume_data_);
     volume_->light(light_);
     volume_->stepsFactor(topLevelWidget()->findChild<QDoubleSpinBox *>("doubleSpinBoxStepsFactor")->value());
     volume_->stepsFactorShadow(topLevelWidget()->findChild<QDoubleSpinBox *>("doubleSpinBoxStepsFactorShadow")->value());
@@ -142,6 +142,9 @@ void GLWidget::initializeGL()
     volume_->noiseFactor(topLevelWidget()->findChild<QDoubleSpinBox *>("doubleSpinBoxNoiseFactor")->value());
     // Attach histogram to volume and this
     volume_->histogram(*histogram_widget_);
+
+    // Volume data
+    //loadVolumeData("../../Models/1/");
 
     // Axis
     glm::vec3 line_data[2];
@@ -187,7 +190,7 @@ void GLWidget::resizeGL(int w, int h)
 void GLWidget::paintGL()
 {
     if (render_tiled_ ) {
-        // Render the viewpoet into tails to avoid crashing OpenGL in a heavy calculation
+        // Render the viewport into tails to avoid crashing OpenGL in a heavy calculation
         int width = camera_.width_;
         int height = camera_.height_;
 
