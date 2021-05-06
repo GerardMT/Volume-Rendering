@@ -9,11 +9,7 @@
 \maketitle
 
 \section*{Functionalities implemented}
-All the basic functionalities have been implemented. Also, the following advanced functionalities are present:
-\begin{itemize}
-\item Advanced illumination (shadows)
-\item Ray casting rasterization acceleration
-\end{itemize}
+The following functionalities have been implemented.
 
 \subsection*{Ray casting}
 The ray casting implemented in this project uses rasterization acceleration to compute the starting and end point of each ray. This has been implemented by rendering the bounding volume mesh two times. First, the back faces of the bounding mesh are rendered and each framgnet stores the world position in a texture, which they represent the ray end position. Then, a second render is perform where the front faces are rendered getting the ray start position and computing the volume ray casting. To improve the performance, early alpha termination have been implemented.
@@ -43,7 +39,7 @@ In contrast to the primary ray, is not possible for the shadow ray to use raster
 The main shadows code can be found in the \textit{shadow(...)} function of the \textit{volume} fragment shader.
 
 \subsection*{Interactive transfer function}
-This project has an interactive histogram which allows to modify each channel curve.
+This project has an interactive histogram which allows to create a custom transfer function.
 
 The user can add, remove and modify points to each channel to create a custom curve. It is important to notice that the interpolation between points is linear. A more advanced interpolation can be easily implemented but for demonstration purposes the linear interpolation is enough.
 
