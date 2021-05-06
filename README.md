@@ -11,6 +11,12 @@ A more detailed documentation can be foud [here](https://github.com/GerardMT/Vol
 ## Known issues
 - The renderer crashes when the performance is low. This is due to some graphic drivers killing the process if a draw call take longer than a few seconds. Can be mitigated by using the tiled rendering.
 
+## Requirements
+The software requires the following libraries to be installed:
+- GLEW
+- Eigen
+- QT 5
+
 ## Build
 Clone the repository:
 
