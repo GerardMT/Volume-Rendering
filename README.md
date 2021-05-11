@@ -2,9 +2,10 @@
 A simple OpenGL volume renderer. Qt 5 used as the base framework.
 
 ## Features
-- Interactive transfer function.
-- Volume shadows.
-- Ray casting rasterization acceleration.
+- Load a custom volume (saved as a set of images).
+- Modify the transfer function.
+- Change lighting parameters.
+- Enable volume shadows.
 
 A more detailed documentation can be found [here](https://github.com/GerardMT/Volume-Rendering/tree/master/docs/report/report.pdf).
 
