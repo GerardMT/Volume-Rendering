@@ -1,13 +1,13 @@
 # Volume Rendering
 A simple OpenGL volume renderer. Qt 5 used as the base framework.
 
+A more detailed documentation can be found [here](docs/report/report.pdf).
+
 ## Features
 - Load a custom volume (saved as a set of images).
 - Modify the transfer function.
 - Change lighting parameters.
 - Enable volume shadows.
-
-A more detailed documentation can be found [here](https://github.com/GerardMT/Volume-Rendering/tree/master/docs/report/report.pdf).
 
 ## Known issues
 - The renderer crashes when the performance is low. This is due to some graphic drivers killing the process if a draw call take longer than a few seconds. Can be mitigated by using the tiled rendering.
